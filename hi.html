@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Temperature Data Fetcher</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input[type="date"],
+    input[type="text"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    #temperature-data {
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Temperature Data Fetcher</h1>
+    <form id="temperature-form">
+      <div>
+        <label for="start-date">Start Date:</label>
+        <input type="date" id="start-date" required>
+      </div>
+      <div>
+        <label for="end-date">End Date:</label>
+        <input type="date" id="end-date" required>
+      </div>
+      <div>
+        <label for="location">Location:</label>
+        <input type="text" id="location" required>
+      </div>
+      <input type="submit" value="Fetch Temperature Data">
+    </form>
+    <div id="temperature-data"></div>
+  </div>
+
+  <script>
+    document.getElementById('temperature-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const startDate = document.getElementById('start-date').value;
+      const endDate = document.getElementById('end-date').value;
+      const location = document.getElementById('location').value;
+      fetchTemperatureData(startDate, endDate, location);
+    });
+
+    function fetchTemperatureData(startDate, endDate, location) {
+      const apiKey = 'LFDCAVPQHQLSPZ2M8KNG5PHJW';
+      const apiUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/${startDate}/${endDate}?unitGroup=metric&include=hours%2Cdays&key=${apiKey}&contentType=json`;
+
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          displayTemperatureData(data);
+        })
+        .catch(error => console.error('Error fetching temperature data:', error));
+    }
+
+    function displayTemperatureData(data) {
+      let output = '<h2>Temperature Data</h2>';
+
+      if (data.days && Array.isArray(data.days)) {
+        data.days.forEach(day => {
+          output += `<h3>${day.datetime}</h3>`;
+          if (day.hours && Array.isArray(day.hours)) {
+            output += '<table>';
+            output += '<tr><th>Time</th><th>Temperature</th></tr>';
+            day.hours.forEach(hour => {
+              output += `<tr><td>${hour.datetime}</td><td>${hour.temp} °C</td></tr>`;
+            });
+            output += '</table>';
+          } else {
+            output += '<p>No hourly data available for this day.</p>';
+          }
+        });
+      } else {
+        output += '<p>No data available.</p>';
+      }
+
+      document.getElementById('temperature-data').innerHTML = output;
+    }
+  </script>
+</body>
+</html>
